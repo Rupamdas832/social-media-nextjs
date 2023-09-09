@@ -17,7 +17,6 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { axiosInstance } from "@/lib/axios";
 import { useRouter } from "next/navigation";
-import { AxiosError } from "axios";
 
 const CreateProfile = () => {
   const [name, setName] = useState("");

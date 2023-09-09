@@ -2,10 +2,20 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { verify } from "@/lib/jwt";
+import { z } from "zod";
 import { Prisma } from "@prisma/client";
 
-export async function GET(req: any) {
+const CreatePostSchema = z.object({
+  title: z.string(),
+  content: z.string(),
+});
+
+export async function POST(req: any) {
+  const requestBody = await req.json();
+
   try {
+    const validatedReq = CreatePostSchema.parse(requestBody);
+
     const cookieStore = cookies();
     const token = cookieStore.get("token")?.value;
     if (!token) {
@@ -23,29 +33,26 @@ export async function GET(req: any) {
       );
     }
 
-    const profile = await prisma.profile.findFirst({
+    const requestedUser = await prisma.user.findFirst({
       where: {
-        id: {
-          equals: verifiedTokenData.payload.profileId as number,
+        email: {
+          equals: verifiedTokenData.payload.email as string,
         },
-      },
-      include: {
-        posts: true,
       },
     });
 
-    if (profile) {
-      return NextResponse.json(
-        {
-          bio: profile.bio || "",
-          name: profile.name || "",
-          userHandle: profile.userHandle || "",
-          profilePic: profile.profilePic || "",
-          posts: profile.posts,
-          profileId: profile.id,
+    if (requestedUser) {
+      const post = await prisma.post.create({
+        data: {
+          title: validatedReq.title,
+          content: validatedReq.content,
+          authorId: Number(verifiedTokenData.payload.profileId),
+          published: true,
         },
-        { status: 200 }
-      );
+      });
+      if (post) {
+        return NextResponse.json(post);
+      }
     }
 
     return NextResponse.json(
@@ -55,7 +62,10 @@ export async function GET(req: any) {
       { status: 400 }
     );
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof z.ZodError) {
+      const errors = error.format();
+      return NextResponse.json({ errors }, { status: 400 });
+    } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
     return NextResponse.json(

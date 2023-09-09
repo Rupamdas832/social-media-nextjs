@@ -1,3 +1,5 @@
+import { UserProfile } from "./profile.type";
+
 export interface Post {
   id: number;
   createdAt: string;
@@ -6,4 +8,5 @@ export interface Post {
   content: string;
   published: boolean;
   authorId: number;
+  author: UserProfile;
 }

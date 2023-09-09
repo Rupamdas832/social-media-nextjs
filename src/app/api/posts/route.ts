@@ -23,36 +23,16 @@ export async function GET(req: any) {
       );
     }
 
-    const profile = await prisma.profile.findFirst({
-      where: {
-        id: {
-          equals: verifiedTokenData.payload.profileId as number,
-        },
-      },
+    const posts = await prisma.post.findMany({
       include: {
-        posts: true,
+        author: true,
       },
     });
-
-    if (profile) {
-      return NextResponse.json(
-        {
-          bio: profile.bio || "",
-          name: profile.name || "",
-          userHandle: profile.userHandle || "",
-          profilePic: profile.profilePic || "",
-          posts: profile.posts,
-          profileId: profile.id,
-        },
-        { status: 200 }
-      );
-    }
-
     return NextResponse.json(
       {
-        message: "Invalid User",
+        posts,
       },
-      { status: 400 }
+      { status: 200 }
     );
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
