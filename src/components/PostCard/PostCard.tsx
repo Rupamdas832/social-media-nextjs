@@ -19,15 +19,22 @@ const PostCard = ({ post, profile }: PostCardProps) => {
   const { title, content } = post;
   const { name } = profile;
   return (
-    <Card className="w-[350px]">
-      <CardDescription className="flex items-center mt-2 ml-2">
+    <Card className="w-[350px]" id={`${post.id}`}>
+      <CardDescription
+        className="flex items-center mt-2 ml-2"
+        id={`${post.id}`}
+      >
         <div className="w-[30px] h-[30px] rounded-full bg-slate-400"></div>
         <p className="pl-2">{name}</p>
       </CardDescription>
-      <CardHeader className="p-4">
-        <CardTitle className="text-xl">{title}</CardTitle>
+      <CardHeader className="p-4" id={`${post.id}`}>
+        <CardTitle className="text-xl" id={`${post.id}`}>
+          {title}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0">{content}</CardContent>
+      <CardContent className="p-4 pt-0" id={`${post.id}`}>
+        {content}
+      </CardContent>
     </Card>
   );
 };

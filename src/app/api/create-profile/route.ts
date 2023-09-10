@@ -51,20 +51,13 @@ export async function POST(req: any) {
           bio: validatedReq?.bio,
           name: validatedReq.name,
           userHandle: validatedReq.userHandle,
-          userId: requestedUser.id,
+          userId: Number(verifiedTokenData.payload.userId),
         },
       });
       if (profile) {
         return NextResponse.json(profile);
       }
     }
-
-    return NextResponse.json(
-      {
-        message: "Invalid User",
-      },
-      { status: 400 }
-    );
   } catch (error) {
     if (error instanceof z.ZodError) {
       const errors = error.format();

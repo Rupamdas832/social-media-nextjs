@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { verify } from "@/lib/jwt";
 import { Prisma } from "@prisma/client";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
-export async function GET(req: any) {
+export async function GET(req: any, { params }: any) {
   try {
     const cookieStore = cookies();
     const token = cookieStore.get("token")?.value;
@@ -23,37 +23,24 @@ export async function GET(req: any) {
       );
     }
 
-    const profile = await prisma.profile.findFirst({
+    const post = await prisma.post.findFirst({
       where: {
-        id: {
-          equals: verifiedTokenData.payload.profileId as number,
-        },
+        id: Number(params.postId),
       },
-      include: {
-        posts: true,
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        createdAt: true,
+        author: {
+          select: {
+            userHandle: true,
+          },
+        },
       },
     });
 
-    if (profile) {
-      return NextResponse.json(
-        {
-          bio: profile.bio || "",
-          name: profile.name || "",
-          userHandle: profile.userHandle || "",
-          profilePic: profile.profilePic || "",
-          posts: profile.posts,
-          profileId: profile.id,
-        },
-        { status: 200 }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        message: "Profile not found",
-      },
-      { status: 404 }
-    );
+    return NextResponse.json(post);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       return NextResponse.json({ message: error.message }, { status: 400 });

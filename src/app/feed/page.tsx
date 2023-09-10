@@ -4,7 +4,7 @@ import PostCard from "@/components/PostCard/PostCard";
 import { axiosInstance } from "@/lib/axios";
 import { Post } from "@/types/post.type";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import Layout from "@/components/layout/Layout";
@@ -35,16 +35,24 @@ const Feed = () => {
     fetchProfile();
   }, []);
 
+  const handlePostClick = (e: MouseEvent<HTMLDivElement>) => {
+    //@ts-ignore
+    if (e.target.id) {
+      //@ts-ignore
+      router.push(`/post/${e.target.id}`);
+    }
+  };
+
   return (
     <Layout>
       <div className="flex flex-col items-center w-full h-screen">
         {isLoading ? (
           <div>Loading...</div>
         ) : (
-          <div>
+          <div onClick={handlePostClick}>
             {posts.map((post: Post) => {
               return (
-                <div className="mt-4" key={post.id}>
+                <div className="mt-4" key={post.id} id={`${post.id}`}>
                   <PostCard post={post} profile={post.author} />
                 </div>
               );

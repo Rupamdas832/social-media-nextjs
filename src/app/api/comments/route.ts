@@ -5,16 +5,60 @@ import { verify } from "@/lib/jwt";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 
-const CreatePostSchema = z.object({
-  title: z.string(),
+const CreateCommentSchema = z.object({
   content: z.string(),
+  postId: z.number(),
 });
+
+export async function GET(req: any) {
+  try {
+    const cookieStore = cookies();
+    const token = cookieStore.get("token")?.value;
+    if (!token) {
+      return NextResponse.json(
+        { message: "Not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    const verifiedTokenData = await verify(token);
+    if (!verifiedTokenData) {
+      return NextResponse.json(
+        { message: "Not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    const comments = await prisma.comment.findMany({
+      select: {
+        content: true,
+        id: true,
+        createdAt: true,
+        author: {
+          select: {
+            userHandle: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(comments);
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return NextResponse.json({ message: error.message }, { status: 400 });
+    }
+    return NextResponse.json(
+      { message: "Something went wrong" },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(req: any) {
   const requestBody = await req.json();
 
   try {
-    const validatedReq = CreatePostSchema.parse(requestBody);
+    const validatedReq = CreateCommentSchema.parse(requestBody);
 
     const cookieStore = cookies();
     const token = cookieStore.get("token")?.value;
@@ -32,16 +76,16 @@ export async function POST(req: any) {
         { status: 401 }
       );
     }
-    const post = await prisma.post.create({
+
+    const comment = await prisma.comment.create({
       data: {
-        title: validatedReq.title,
         content: validatedReq.content,
+        postId: validatedReq.postId,
         authorId: Number(verifiedTokenData.payload.profileId),
-        published: true,
       },
     });
-    if (post) {
-      return NextResponse.json(post);
+    if (comment) {
+      return NextResponse.json(comment);
     }
   } catch (error) {
     if (error instanceof z.ZodError) {

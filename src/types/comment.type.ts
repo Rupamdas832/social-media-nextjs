@@ -1,14 +1,13 @@
-import { Comment } from "./comment.type";
+import { Post } from "./post.type";
 import { UserProfile } from "./profile.type";
 
-export interface Post {
+export interface Comment {
   id: number;
   createdAt: string;
   updatedAt: string;
-  title: string;
   content: string;
-  published: boolean;
   authorId: number;
   author: UserProfile;
-  comments: Comment[];
+  postId: number;
+  post: Post;
 }
