@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/db";
+import { verify } from "@/lib/jwt";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -8,6 +10,23 @@ export async function GET(
   const postId = Number(params.postId);
 
   try {
+    const cookieStore = cookies();
+    const token = cookieStore.get("token")?.value;
+    if (!token) {
+      return NextResponse.json(
+        { message: "Not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    const verifiedTokenData = await verify(token);
+    if (!verifiedTokenData) {
+      return NextResponse.json(
+        { message: "Not authenticated" },
+        { status: 401 }
+      );
+    }
+
     const allComments = await prisma.comment.findMany({
       where: {
         postId: {

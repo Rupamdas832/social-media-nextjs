@@ -61,6 +61,7 @@ const PostPage = () => {
       });
       if (status === 200) {
         fetchComments();
+        setCurrentCommentText("");
       }
     } catch (error: any) {
       console.log(error);
@@ -94,6 +95,7 @@ const PostPage = () => {
               <Input
                 type="text"
                 placeholder="Your comment on the post..."
+                value={currentCommentText}
                 onChange={(e) => setCurrentCommentText(e.target.value)}
               />
               <Button

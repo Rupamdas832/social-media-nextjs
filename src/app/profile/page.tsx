@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, LogOut } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { axiosInstance } from "@/lib/axios";
 import { useRouter } from "next/navigation";
@@ -35,6 +35,25 @@ const Profile = () => {
     fetchProfile();
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      const { status } = await axiosInstance(`/api/logout`);
+      if (status) {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handlePostClick = (e: MouseEvent<HTMLDivElement>) => {
+    //@ts-ignore
+    if (e.target.id) {
+      //@ts-ignore
+      router.push(`/post/${e.target.id}`);
+    }
+  };
+
   return (
     <Layout>
       <div className="flex flex-col items-center w-full h-screen">
@@ -42,7 +61,10 @@ const Profile = () => {
           <div>Loading...</div>
         ) : profileData ? (
           <div className="w-[350px] ">
-            <div className="flex flex-col justify-center items-center mt-8">
+            <div className="flex flex-col justify-center items-center mt-8 relative">
+              <div className="absolute right-0 top-0" onClick={handleLogout}>
+                <LogOut />
+              </div>
               <div className="w-[150px] h-[150px] rounded-full bg-slate-400"></div>
               <p className="font-bold text-white text-2xl mt-4">
                 {profileData.name}
@@ -74,7 +96,12 @@ const Profile = () => {
             <div className="mt-6">
               {profileData.posts.map((post) => {
                 return (
-                  <div className="mt-4" key={post.id}>
+                  <div
+                    className="mt-4"
+                    key={post.id}
+                    id={`${post.id}`}
+                    onClick={handlePostClick}
+                  >
                     <PostCard post={post} profile={profileData} />
                   </div>
                 );

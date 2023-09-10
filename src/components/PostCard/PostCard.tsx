@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { UserProfile } from "@/types/profile.type";
+import { format } from "date-fns";
 
 interface PostCardProps {
   post: Post;
@@ -21,11 +22,16 @@ const PostCard = ({ post, profile }: PostCardProps) => {
   return (
     <Card className="w-[350px]" id={`${post.id}`}>
       <CardDescription
-        className="flex items-center mt-2 ml-2"
+        className="flex items-center justify-between p-2"
         id={`${post.id}`}
       >
-        <div className="w-[30px] h-[30px] rounded-full bg-slate-400"></div>
-        <p className="pl-2">{name}</p>
+        <div className="flex items-center">
+          <div className="w-[30px] h-[30px] rounded-full bg-slate-400"></div>
+          <p className="pl-2">{name}</p>
+        </div>
+        <p className="text-neutral-500">
+          {format(new Date(post.createdAt), "hh:mm, dd-MMM-yy")}
+        </p>
       </CardDescription>
       <CardHeader className="p-4" id={`${post.id}`}>
         <CardTitle className="text-xl" id={`${post.id}`}>

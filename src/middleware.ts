@@ -1,25 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verify } from "./lib/jwt";
 
-const protectedRoutes = [
-  "/profile",
-  "/feed",
-  "/post",
-  "/create-post",
-  "/api/profile",
-  "/api/feed",
-  "/api/follow",
-];
-
 async function isAuthenticated(req: NextRequest) {
   try {
     const token = req.cookies.get("token");
+
     if (!token) {
       return false;
     }
     const jwt = await verify(token.value);
+    console.log(jwt);
 
-    if (!jwt || !jwt.payload.id) {
+    if (!jwt || !jwt.payload.userId) {
       return false;
     }
     return true;
@@ -32,19 +24,25 @@ async function isAuthenticated(req: NextRequest) {
 export async function middleware(req: any) {
   const requestedPathname = req.nextUrl.pathname;
 
-  //   let matchesWithAnyProtectedRoutes = false;
-  //   for (let i = 0; i < protectedRoutes.length; i++) {
-  //     if (requestedPathname.startsWith(protectedRoutes[i])) {
-  //       matchesWithAnyProtectedRoutes = true;
-  //       break;
-  //     }
-  //   }
-  //   console.log("matchesWithAnyProtectedRoutes", matchesWithAnyProtectedRoutes);
+  const isAuth = await isAuthenticated(req);
+  console.log(isAuth);
 
-  //   const isAuth = await isAuthenticated(req);
-
-  //   if (matchesWithAnyProtectedRoutes) {
-  //     if (isAuth === false)
-  //       return NextResponse.redirect(new URL("/login", req.url));
-  //   }
+  if (requestedPathname === "/login" && isAuth === true) {
+    return NextResponse.redirect(new URL("/feed", req.url));
+  } else if (requestedPathname !== "/login" && isAuth === false) {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
 }
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - static (static files)
+     * - favicon.ico (favicon file)
+     * - _next internal calls
+     */
+    "/((?!api|static|favicon.ico|_next).*)",
+  ],
+};
